@@ -1,4 +1,4 @@
-# pfe2025
+# Graduation Project for Bachelor 
 
 A new Flutter project.
 
