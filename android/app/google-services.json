@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "849312405490",
+    "project_id": "childcare-38b11",
+    "storage_bucket": "childcare-38b11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849312405490:android:3bc40cfcede11f4b02fd6b",
+        "android_client_info": {
+          "package_name": "com.example.pfe2025"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiWlhYQe8ezf5559oiCzvXqzU4q5PwTn0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
