@@ -1,9 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/login.dart';
 import 'pages/doctor_home.dart';
-import 'pages/mother_home.dart'; 
+import 'pages/mother_home.dart';
+import 'pages/admin_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,22 +27,23 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
     checkLogin();
   }
 
-  // Check login status
   Future<void> checkLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? email = prefs.getString('email');
+    String? role = prefs.getString('role');
 
-    if (email != null) {
-      if (email == 'doctor') {
+    if (role != null) {
+      if (role == 'doctor') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DoctorHomePage()),
         );
-      } else if (email == 'mom') {
+      } else if (role == 'mother') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MotherHomePage()),
         );
+      } else if (role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/adminHome');
       }
     }
   }
@@ -51,7 +54,7 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
       title: 'دفتر صحة الطفل',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Cairo',
+        fontFamily: 'Arial',
         primaryColor: Colors.pink.shade200,
         scaffoldBackgroundColor: Colors.pink.shade50,
         appBarTheme: AppBarTheme(
@@ -59,7 +62,21 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
           foregroundColor: Colors.white,
         ),
       ),
-      home: const LoginPage(), // Default login screen
+      // Add localization support here
+      locale: const Locale('ar', ''),
+      supportedLocales: const [
+        Locale('en', ''), // English
+        Locale('ar', ''), // Arabic
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      routes: {
+        '/adminHome': (context) => const AdminHomePage(),
+      },
+      home: const LoginPage(),
     );
   }
 }

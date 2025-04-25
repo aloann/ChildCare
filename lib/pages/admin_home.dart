@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login.dart'; // Import LoginPage to navigate back
-import 'child_list_doc.dart';  // Import the new page to display the children list
+import 'register.dart';
+import 'login.dart';
+import 'add_child.dart'; // Import the AddChildPage
 
-class DoctorHomePage extends StatelessWidget {
-  const DoctorHomePage({super.key});
+class AdminHomePage extends StatelessWidget {
+  const AdminHomePage({super.key});
 
   // Function to log out
   void logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Clear saved login data
+    await prefs.clear();
 
-    // Navigate back to the login page
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -22,7 +22,7 @@ class DoctorHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('أهلاً دكتور'),
+        title: const Text('الصفحة الرئيسية للمسؤول'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -38,15 +38,22 @@ class DoctorHomePage extends StatelessWidget {
           children: [
             const SizedBox(height: 8),
             ChildCareMenuButton(
-              text: 'قائمة الأطفال',
-              icon: Icons.child_care,
+              text: 'تسجيل حساب جديد',
+              icon: Icons.person_add,
               onTap: () {
-                // Navigate to the child list page
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChildListDocPage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const RegisterPage()),
+                );
+              },
+            ),
+            ChildCareMenuButton(
+              text: 'إضافة طفل جديد',
+              icon: Icons.child_care,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddChildPage()),
                 );
               },
             ),
