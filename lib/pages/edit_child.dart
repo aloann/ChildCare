@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pfe2025/pages/sizes_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EditChildPage extends StatefulWidget {
   final String childId;
@@ -12,35 +14,38 @@ class EditChildPage extends StatefulWidget {
 
 class _EditChildPageState extends State<EditChildPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _lnameController;
   late TextEditingController _allergiesController;
   late TextEditingController _commentsController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
   late TextEditingController _nextAppointmentController;
-  late TextEditingController _vaccinesController;
+  late TextEditingController _birthWeightController;
+  late TextEditingController _birthMethodController;
 
+  String _firstName = '';
+  String _lastName = '';
   late DateTime _dob;
   late DateTime _nextAppointment;
+
+  String _birthCry = 'لا'; // Default option: لا
+  String _sex = 'ذكر'; // Default option: ذكر
+  String _motherEmail = ''; // To store mother's email
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
-    _lnameController = TextEditingController();
     _allergiesController = TextEditingController();
     _commentsController = TextEditingController();
     _heightController = TextEditingController();
     _weightController = TextEditingController();
     _nextAppointmentController = TextEditingController();
-    _vaccinesController = TextEditingController();
+    _birthWeightController = TextEditingController();
+    _birthMethodController = TextEditingController();
     _dob = DateTime.now();
     _nextAppointment = DateTime.now();
     _loadChildData();
   }
 
-  // Load child data from Firestore
   Future<void> _loadChildData() async {
     DocumentSnapshot snapshot = await FirebaseFirestore.instance
         .collection('children')
@@ -49,13 +54,15 @@ class _EditChildPageState extends State<EditChildPage> {
 
     if (snapshot.exists) {
       var childData = snapshot.data() as Map<String, dynamic>;
-      _nameController.text = childData['name'] ?? '';
-      _lnameController.text = childData['LName'] ?? '';
+      _firstName = childData['name'] ?? '';
+      _lastName = childData['LName'] ?? '';
+      _motherEmail = childData['motherMail'] ?? ''; // Get mother's email
       _allergiesController.text = childData['allergies'] ?? '';
       _commentsController.text = childData['comments'] ?? '';
       _heightController.text = childData['height']?.toString() ?? '';
       _weightController.text = childData['weight']?.toString() ?? '';
-      _vaccinesController.text = childData['vaccines'] ?? '';
+      _birthWeightController.text = childData['birthWeight']?.toString() ?? '';
+      _birthMethodController.text = childData['birthMethod'] ?? '';
 
       _dob = (childData['dob'] as Timestamp).toDate();
 
@@ -65,26 +72,28 @@ class _EditChildPageState extends State<EditChildPage> {
       _nextAppointmentController.text =
           _nextAppointment.toLocal().toString().split(' ')[0];
 
+      _birthCry = childData['birthCry'] ?? 'لا'; // Default is "لا"
+      _sex = childData['sex'] ?? 'ذكر'; // Default is "ذكر"
+
       setState(() {});
     }
   }
 
-  // Save edited data to Firestore
   Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
       await FirebaseFirestore.instance
           .collection('children')
           .doc(widget.childId)
           .update({
-        'name': _nameController.text,
-        'LName': _lnameController.text,
-        'dob': _dob,
         'allergies': _allergiesController.text,
         'comments': _commentsController.text,
         'height': double.tryParse(_heightController.text) ?? 0,
         'weight': double.tryParse(_weightController.text) ?? 0,
         'nextAppointment': _nextAppointment,
-        'vaccines': _vaccinesController.text,
+        'birthWeight': double.tryParse(_birthWeightController.text) ?? 0,
+        'birthMethod': _birthMethodController.text,
+        'birthCry': _birthCry,
+        'sex': _sex,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
 
@@ -95,7 +104,6 @@ class _EditChildPageState extends State<EditChildPage> {
     }
   }
 
-  // Date picker for next appointment
   Future<void> _selectNextAppointment(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -112,6 +120,22 @@ class _EditChildPageState extends State<EditChildPage> {
     }
   }
 
+  // Method to open Gmail with the mother's email
+  Future<void> _sendEmail() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: _motherEmail,
+      queryParameters: {'subject': 'استفسار عن الطفل $_firstName $_lastName'},
+    );
+    if (await canLaunch(emailUri.toString())) {
+      await launch(emailUri.toString());
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا يمكن فتح البريد الإلكتروني')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,19 +148,68 @@ class _EditChildPageState extends State<EditChildPage> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'الاسم الأول للطفل'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'الرجاء إدخال الاسم' : null,
+                // Display name and surname at the top
+                Center(
+                  child: Text(
+                    '$_firstName $_lastName',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                TextFormField(
-                  controller: _lnameController,
-                  decoration: const InputDecoration(labelText: 'اللقب'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'الرجاء إدخال اللقب' : null,
+                const SizedBox(height: 20),
+
+                // Dropdown for birth cry (بكاء عند الولادة)
+                DropdownButtonFormField<String>(
+                  value: _birthCry,
+                  items: ['لا', 'نعم'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _birthCry = value!;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'بكاء عند الولادة'),
                 ),
+
+                // Dropdown for sex (ذكر/أنثى)
+                DropdownButtonFormField<String>(
+                  value: _sex,
+                  items: ['ذكر', 'أنثى'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _sex = value!;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'النوع'),
+                ),
+
+                // New field for birth method (طريقة الولادة)
+                TextFormField(
+                  controller: _birthMethodController,
+                  decoration: const InputDecoration(labelText: 'طريقة الولادة'),
+                ),
+
+                // New field for birth weight (الوزن عند الولادة)
+                TextFormField(
+                  controller: _birthWeightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'الوزن عند الولادة'),
+                ),
+
+                // Existing fields
                 TextFormField(
                   controller: _allergiesController,
                   decoration: const InputDecoration(labelText: 'الحساسيات'),
@@ -155,12 +228,23 @@ class _EditChildPageState extends State<EditChildPage> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'الوزن'),
                 ),
-                TextFormField(
-                  controller: _vaccinesController,
-                  decoration: const InputDecoration(labelText: 'اللقاحات'),
-                ),
 
-                // Next Appointment with date picker
+                // Button to navigate to VaccinePage
+                ElevatedButton(
+                  onPressed: _navigateToVaccinesPage,
+                  child: const Text('إدارة اللقاحات'),
+                ),
+ElevatedButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SizesPage(childId: widget.childId, dob: _dob),
+      ),
+    );
+  },
+  child: const Text('عرض تطور الطول والوزن'),
+),
                 GestureDetector(
                   onTap: () => _selectNextAppointment(context),
                   child: AbsorbPointer(
@@ -176,7 +260,6 @@ class _EditChildPageState extends State<EditChildPage> {
 
                 const SizedBox(height: 10),
 
-                // Display DOB
                 Row(
                   children: [
                     const Text('تاريخ الميلاد: '),
@@ -187,10 +270,28 @@ class _EditChildPageState extends State<EditChildPage> {
                   ],
                 ),
 
+                const SizedBox(height: 10),
+
+                // Display mother's email
+                Row(
+                  children: [
+                    const Text('بريد الأم: '),
+                    Text(
+                      _motherEmail,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.email),
+                      onPressed: _sendEmail,
+                    ),
+                  ],
+                ),
+
                 const SizedBox(height: 20),
+
                 ElevatedButton(
                   onPressed: _saveData,
-                  child: const Text('حفظ'),
+                  child: const Text('حفظ التغييرات'),
                 ),
               ],
             ),
@@ -198,5 +299,9 @@ class _EditChildPageState extends State<EditChildPage> {
         ),
       ),
     );
+  }
+
+  void _navigateToVaccinesPage() {
+    // Add navigation to the Vaccines page if needed
   }
 }

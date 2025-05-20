@@ -10,70 +10,115 @@ class ChildListDocPage extends StatefulWidget {
 }
 
 class _ChildListDocPageState extends State<ChildListDocPage> {
-  // Function to fetch the list of children for the doctor
-  Future<List<Map<String, dynamic>>> _fetchChildren() async {
+  List<Map<String, dynamic>> _allChildren = [];
+  List<Map<String, dynamic>> _filteredChildren = [];
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchChildren();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _fetchChildren() async {
     final snapshot = await FirebaseFirestore.instance.collection('children').get();
-    return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    final children = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      data['docId'] = doc.id; // Include Firestore doc ID
+      return data;
+    }).toList();
+
+    setState(() {
+      _allChildren = children;
+      _filteredChildren = children;
+    });
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim();
+
+    setState(() {
+      _filteredChildren = _allChildren.where((child) {
+        final fullName = '${child['name']} ${child['LName']}'.trim();
+        return fullName.contains(query) ||
+            child['motherMail'].contains(query);
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('قائمة الأطفال'),  // Page title
+        title: const Text('قائمة الأطفال'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                // Trigger a refresh by rebuilding the widget
-              });
-            },
+            onPressed: _fetchChildren,
           ),
         ],
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchChildren(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching children.'));
-          }
-
-          final children = snapshot.data;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                // Trigger a refresh by rebuilding the widget
-              });
-            },
-            child: ListView.builder(
-              itemCount: children?.length ?? 0,
-              itemBuilder: (context, index) {
-                final child = children![index];
-                final childId = child['nationalID'];  // Assuming the child document ID is the nationalID
-
-                return ListTile(
-                  title: Text('${child['name']} ${child['LName']}'),
-                  subtitle: Text('DOB: ${child['dob']}'),
-                  onTap: () {
-                    // Navigate to the EditChildPage when a child is tapped
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditChildPage(childId: childId),
-                      ),
-                    );
-                  },
-                );
-              },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              textDirection: TextDirection.rtl,
+              decoration: InputDecoration(
+                labelText: 'ابحث عن اسم الطفل أو بريد الأم',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
-          );
-        },
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _fetchChildren,
+              child: ListView.builder(
+                itemCount: _filteredChildren.length,
+                itemBuilder: (context, index) {
+                  final child = _filteredChildren[index];
+                  final childId = child['docId']; // Using Firestore document ID
+
+                  return Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: ListTile(
+                        title: Text(
+                          '${child['LName'] ?? 'بدون اسم'} ${child['name'] ?? ''}',
+                          textDirection: TextDirection.rtl,
+                        ),
+                        subtitle: Text(
+                          'تاريخ الميلاد: ${child['dob'] != null ? (child['dob'] as Timestamp).toDate().toLocal().toString().split(' ')[0] : 'غير معروف'}',
+                        ),
+                        trailing: const Icon(Icons.chevron_left),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditChildPage(childId: childId),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

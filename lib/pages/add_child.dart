@@ -7,17 +7,15 @@ class AddChildPage extends StatefulWidget {
   @override
   State<AddChildPage> createState() => _AddChildPageState();
 }
-
 class _AddChildPageState extends State<AddChildPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _motherEmailController = TextEditingController();
-  final TextEditingController _nationalIdController = TextEditingController();
 
   DateTime? _selectedDate;
-
   bool _isLoading = false;
+  String _selectedSex = 'ذكر'; // Default sex value
 
   void _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -25,10 +23,10 @@ class _AddChildPageState extends State<AddChildPage> {
       initialDate: DateTime(2020),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
-      locale: const Locale("ar", ""), // Arabic localization
+      locale: const Locale("ar", ""),
     );
 
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
         _selectedDate = picked;
       });
@@ -40,27 +38,25 @@ class _AddChildPageState extends State<AddChildPage> {
       setState(() => _isLoading = true);
 
       try {
-        await FirebaseFirestore.instance
-            .collection('children')
-            .doc(_nationalIdController.text.trim())
-            .set({
+        await FirebaseFirestore.instance.collection('children').add({
           'name': _nameController.text.trim(),
-          'LName': _lastNameController.text.trim(), // Renamed here
+          'LName': _lastNameController.text.trim(),
           'dob': _selectedDate,
           'motherMail': _motherEmailController.text.trim(),
-          'nationalID': _nationalIdController.text.trim(),
+          'sex': _selectedSex,
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('تمت إضافة الطفل بنجاح')),
         );
 
-        // Clear fields
         _nameController.clear();
         _lastNameController.clear();
         _motherEmailController.clear();
-        _nationalIdController.clear();
-        setState(() => _selectedDate = null);
+        setState(() {
+          _selectedDate = null;
+          _selectedSex = 'ذكر';
+        });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('فشل في إضافة الطفل: $e')),
@@ -76,7 +72,6 @@ class _AddChildPageState extends State<AddChildPage> {
     _nameController.dispose();
     _lastNameController.dispose();
     _motherEmailController.dispose();
-    _nationalIdController.dispose();
     super.dispose();
   }
 
@@ -120,8 +115,9 @@ class _AddChildPageState extends State<AddChildPage> {
                             ? ''
                             : '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
                       ),
-                      validator: (value) =>
-                          _selectedDate == null ? 'يرجى اختيار تاريخ الميلاد' : null,
+                      validator: (value) => _selectedDate == null
+                          ? 'يرجى اختيار تاريخ الميلاد'
+                          : null,
                     ),
                   ),
                 ),
@@ -133,21 +129,30 @@ class _AddChildPageState extends State<AddChildPage> {
                       value!.isEmpty ? 'يرجى إدخال البريد الإلكتروني للأم' : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _nationalIdController,
-                  decoration: const InputDecoration(labelText: 'الرقم الوطني للطفل'),
-                  keyboardType: TextInputType.number,
-                  maxLength: 18,
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'يرجى إدخال الرقم الوطني';
-                    } else if (value.length != 18) {
-                      return 'يجب أن يحتوي الرقم الوطني على 18 رقمًا';
-                    } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                      return 'الرقم الوطني يجب أن يحتوي على أرقام فقط';
-                    }
-                    return null;
-                  },
+                const Text('الجنس:', style: TextStyle(fontSize: 16)),
+                ListTile(
+                  title: const Text('ذكر'),
+                  leading: Radio<String>(
+                    value: 'ذكر',
+                    groupValue: _selectedSex,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSex = value!;
+                      });
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('أنثى'),
+                  leading: Radio<String>(
+                    value: 'أنثى',
+                    groupValue: _selectedSex,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSex = value!;
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(height: 24),
                 _isLoading
