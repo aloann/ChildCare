@@ -84,12 +84,12 @@ class _LoginPageState extends State<LoginPage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('تسجيل الدخول')),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+        appBar: AppBar(title: const Text('تسجيل الدخول')),        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Image.asset('assets/images/baby_carriage.png', width: 80, height: 80),
               const SizedBox(height: 20),
               TextField(
@@ -110,12 +110,12 @@ class _LoginPageState extends State<LoginPage> {
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('تسجيل الدخول'),
-                ),
-              ),
+                ),              ),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

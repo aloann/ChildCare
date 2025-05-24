@@ -6,6 +6,7 @@ import 'pages/login.dart';
 import 'pages/doctor_home.dart';
 import 'pages/mother_home.dart';
 import 'pages/admin_home.dart';
+import 'pages/chatbot_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,26 +25,26 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
-  }
-
-  Future<void> checkLogin() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkLogin();
+    });
+  }  Future<void> checkLogin() async {
+    if (!mounted) return;
+    
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? role = prefs.getString('role');
 
-    if (role != null) {
+    if (role != null && mounted) {
       if (role == 'doctor') {
-        Navigator.pushReplacement(
-          context,
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DoctorHomePage()),
         );
       } else if (role == 'mother') {
-        Navigator.pushReplacement(
-          context,
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MotherHomePage()),
         );
       } else if (role == 'admin') {
-        Navigator.pushReplacementNamed(context, '/adminHome');
+        Navigator.of(context).pushReplacementNamed('/adminHome');
       }
     }
   }
@@ -55,11 +56,76 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Arial',
-        primaryColor: Colors.pink.shade200,
-        scaffoldBackgroundColor: Colors.pink.shade50,
+        primaryColor: Colors.teal.shade700,
+        scaffoldBackgroundColor: Colors.teal.shade50,
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.pink.shade200,
+          backgroundColor: Colors.teal.shade700,
           foregroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.teal.shade200,
+          titleTextStyle: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal.shade700,
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 3,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.teal.shade700,
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Colors.teal.shade700,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Colors.teal.shade700,
+              width: 2,
+            ),
+          ),
+          labelStyle: TextStyle(
+            color: Colors.teal.shade700,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: Colors.white,
+          shadowColor: Colors.teal.shade100,
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.teal.shade700,
+          foregroundColor: Colors.white,
+          elevation: 4,
         ),
       ),
       // Add localization support here
@@ -75,6 +141,7 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
       ],
       routes: {
         '/adminHome': (context) => const AdminHomePage(),
+        '/chatbot': (context) => const ChatbotScreen(),
       },
       home: const LoginPage(),
     );

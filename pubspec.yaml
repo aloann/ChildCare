@@ -42,9 +42,10 @@ dependencies:
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.2
   cloud_firestore: ^5.6.6
-  intl: ^0.19.0
+  intl: ^0.20.2
   url_launcher: ^6.3.1
   fl_chart: ^1.0.0
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/baby_carriage.png
+    - assets/api_keys.json
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

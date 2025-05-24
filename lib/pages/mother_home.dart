@@ -45,6 +45,12 @@ class MotherHomePage extends StatelessWidget {
                 );
               },
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/chatbot');
+              },
+              child: const Text('الدردشة مع الشات بوت'),
+            ),
           ],
         ),
       ),
