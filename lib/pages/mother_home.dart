@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
-import 'child_list_mom.dart'; // Import the page you'll create for listing children
+import 'child_list_mom.dart';
 import 'appointments_mother.dart';
+import 'smart_assistant.dart';
 
 class MotherHomePage extends StatelessWidget {
   const MotherHomePage({super.key});
@@ -43,6 +44,29 @@ class MotherHomePage extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) => const ChildListMomPage()),
                 );
+              },
+            ),
+            const SizedBox(height: 8),
+            ChildCareMenuButton(
+              text: 'المواعيد القادمة',
+              icon: Icons.calendar_today, // Using calendar icon for appointments
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AppointmentsMotherPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            ChildCareMenuButton(
+              text: 'المساعد الذكي',
+              icon: Icons.smart_toy,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SmartAssistantPage()),
+
+                    );
               },
             ),
           ],

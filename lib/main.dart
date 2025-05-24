@@ -22,33 +22,6 @@ class ChildHealthApp extends StatefulWidget {
 
 class _ChildHealthAppState extends State<ChildHealthApp> {
   @override
-  void initState() {
-    super.initState();
-    checkLogin();
-  }
-
-  Future<void> checkLogin() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? role = prefs.getString('role');
-
-    if (role != null) {
-      if (role == 'doctor') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DoctorHomePage()),
-        );
-      } else if (role == 'mother') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MotherHomePage()),
-        );
-      } else if (role == 'admin') {
-        Navigator.pushReplacementNamed(context, '/adminHome');
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'دفتر صحة الطفل',
@@ -62,21 +35,54 @@ class _ChildHealthAppState extends State<ChildHealthApp> {
           foregroundColor: Colors.white,
         ),
       ),
-      // Add localization support here
       locale: const Locale('ar', ''),
       supportedLocales: const [
-        Locale('en', ''), // English
-        Locale('ar', ''), // Arabic
+        Locale('en', ''),
+        Locale('ar', ''),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      // Ensure RTL text direction globally
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child!,
+        );
+      },
       routes: {
         '/adminHome': (context) => const AdminHomePage(),
       },
-      home: const LoginPage(),
+      // Use FutureBuilder to handle initial navigation based on login state
+      home: FutureBuilder<Widget>(
+        future: _checkLogin(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return snapshot.data ?? const LoginPage();
+        },
+      ),
     );
+  }
+
+  Future<Widget> _checkLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? role = prefs.getString('role');
+
+    if (role != null) {
+      if (role == 'doctor') {
+        return const DoctorHomePage();
+      } else if (role == 'mother') {
+        return const MotherHomePage();
+      } else if (role == 'admin') {
+        return const AdminHomePage();
+      }
+    }
+    return const LoginPage();
   }
 }

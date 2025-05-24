@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'doctor_home.dart';
 import 'mother_home.dart';
-import 'admin_home.dart'; // Import AdminHomePage here
+import 'admin_home.dart';
+import 'reset_pw.dart'; // Import the new ResetPasswordPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -110,6 +110,23 @@ class _LoginPageState extends State<LoginPage> {
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('تسجيل الدخول'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ResetPasswordPage()),
+                  );
+                },
+                child: const Text(
+                  'نسيت كلمة السر؟',
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],

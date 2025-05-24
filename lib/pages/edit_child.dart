@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pfe2025/pages/sizes_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:pfe2025/pages/vac_page.dart';
 
 class EditChildPage extends StatefulWidget {
   final String childId;
@@ -56,7 +57,7 @@ class _EditChildPageState extends State<EditChildPage> {
       var childData = snapshot.data() as Map<String, dynamic>;
       _firstName = childData['name'] ?? '';
       _lastName = childData['LName'] ?? '';
-      _motherEmail = childData['motherMail'] ?? ''; // Get mother's email
+      _motherEmail = childData['motherMail'] ?? '';
       _allergiesController.text = childData['allergies'] ?? '';
       _commentsController.text = childData['comments'] ?? '';
       _heightController.text = childData['height']?.toString() ?? '';
@@ -72,8 +73,8 @@ class _EditChildPageState extends State<EditChildPage> {
       _nextAppointmentController.text =
           _nextAppointment.toLocal().toString().split(' ')[0];
 
-      _birthCry = childData['birthCry'] ?? 'لا'; // Default is "لا"
-      _sex = childData['sex'] ?? 'ذكر'; // Default is "ذكر"
+      _birthCry = childData['birthCry'] ?? 'لا';
+      _sex = childData['sex'] ?? 'ذكر';
 
       setState(() {});
     }
@@ -120,20 +121,28 @@ class _EditChildPageState extends State<EditChildPage> {
     }
   }
 
-  // Method to open Gmail with the mother's email
   Future<void> _sendEmail() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
       path: _motherEmail,
       queryParameters: {'subject': 'استفسار عن الطفل $_firstName $_lastName'},
     );
-    if (await canLaunch(emailUri.toString())) {
-      await launch(emailUri.toString());
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('لا يمكن فتح البريد الإلكتروني')),
       );
     }
+  }
+
+  void _navigateToVaccinesPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VaccinesPage(childId: widget.childId),
+      ),
+    );
   }
 
   @override
@@ -150,7 +159,6 @@ class _EditChildPageState extends State<EditChildPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Display name and surname at the top
                 Center(
                   child: Text(
                     '$_firstName $_lastName',
@@ -161,8 +169,6 @@ class _EditChildPageState extends State<EditChildPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Dropdown for birth cry (بكاء عند الولادة)
                 DropdownButtonFormField<String>(
                   value: _birthCry,
                   items: ['لا', 'نعم'].map((String value) {
@@ -178,8 +184,6 @@ class _EditChildPageState extends State<EditChildPage> {
                   },
                   decoration: const InputDecoration(labelText: 'بكاء عند الولادة'),
                 ),
-
-                // Dropdown for sex (ذكر/أنثى)
                 DropdownButtonFormField<String>(
                   value: _sex,
                   items: ['ذكر', 'أنثى'].map((String value) {
@@ -195,21 +199,15 @@ class _EditChildPageState extends State<EditChildPage> {
                   },
                   decoration: const InputDecoration(labelText: 'النوع'),
                 ),
-
-                // New field for birth method (طريقة الولادة)
                 TextFormField(
                   controller: _birthMethodController,
                   decoration: const InputDecoration(labelText: 'طريقة الولادة'),
                 ),
-
-                // New field for birth weight (الوزن عند الولادة)
                 TextFormField(
                   controller: _birthWeightController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'الوزن عند الولادة'),
                 ),
-
-                // Existing fields
                 TextFormField(
                   controller: _allergiesController,
                   decoration: const InputDecoration(labelText: 'الحساسيات'),
@@ -228,23 +226,21 @@ class _EditChildPageState extends State<EditChildPage> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'الوزن'),
                 ),
-
-                // Button to navigate to VaccinePage
                 ElevatedButton(
                   onPressed: _navigateToVaccinesPage,
                   child: const Text('إدارة اللقاحات'),
                 ),
-ElevatedButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => SizesPage(childId: widget.childId, dob: _dob),
-      ),
-    );
-  },
-  child: const Text('عرض تطور الطول والوزن'),
-),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SizesPage(childId: widget.childId, dob: _dob),
+                      ),
+                    );
+                  },
+                  child: const Text('عرض تطور الطول والوزن'),
+                ),
                 GestureDetector(
                   onTap: () => _selectNextAppointment(context),
                   child: AbsorbPointer(
@@ -257,9 +253,7 @@ ElevatedButton(
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 Row(
                   children: [
                     const Text('تاريخ الميلاد: '),
@@ -269,10 +263,7 @@ ElevatedButton(
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 10),
-
-                // Display mother's email
                 Row(
                   children: [
                     const Text('بريد الأم: '),
@@ -286,9 +277,7 @@ ElevatedButton(
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
-
                 ElevatedButton(
                   onPressed: _saveData,
                   child: const Text('حفظ التغييرات'),
@@ -299,9 +288,5 @@ ElevatedButton(
         ),
       ),
     );
-  }
-
-  void _navigateToVaccinesPage() {
-    // Add navigation to the Vaccines page if needed
   }
 }
