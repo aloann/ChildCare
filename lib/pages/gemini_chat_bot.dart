@@ -16,6 +16,10 @@ class _GeminiChatBotState extends State<GeminiChatBot> {
   final List<MessageModel> _messages = [];
   late final GenerativeModel _model;
 
+  // نص التعليمات النظامية لتوجيه سلوك النموذج
+  final String _systemInstructionText =
+      "أنت روبوت محادثة متخصص في تقديم معلومات عامة وغير تشخيصية حول صحة الطفل. أجِب على الأسئلة بوضوح وبطريقة مفيدة، مع التأكيد دائمًا على ضرورة استشارة الطبيب في الحالات الطارئة أو لتشخيص دقيق.";
+
   @override
   void initState() {
     super.initState();
@@ -24,7 +28,10 @@ class _GeminiChatBotState extends State<GeminiChatBot> {
     _model = GenerativeModel(
       model: 'gemini-2.0-flash',
       apiKey: apiKey,
-    ); // Updated model name to gemini-2.0-flash
+      systemInstruction: Content.text(
+        _systemInstructionText,
+      ), // Reapply system instruction
+    );
   }
 
   @override
