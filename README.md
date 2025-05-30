@@ -1,16 +1,7 @@
-# Graduation Project for Bachelor 
+# The project
+This project was for my bachelor graduation from the University of M'Sila
+Me and my partners passed with 15.5/20 because we didn't have enough time to finish a few elements of the app as we are beginners, however I am very proud of it 
 
-A new Flutter project.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# What is it about? 
+It's basically a mini version for the Algerian Health Record Booklet, and maybe in the future it could be a replacement.
