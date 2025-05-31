@@ -9,4 +9,5 @@ It's basically a mini version for the Algerian Health Record Booklet, and maybe 
 
 # Pictures 
 Login Page:
-![Image](https://github.com/user-attachments/assets/16ec1a6b-cc35-4a71-88b5-9f7c655c7fa3) 
+<img src="https://github.com/user-attachments/assets/16ec1a6b-cc35-4a71-88b5-9f7c655c7fa3" width="300"/>
+
