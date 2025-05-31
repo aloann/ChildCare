@@ -5,3 +5,7 @@ Me and my partners passed with 15.5/20 because we didn't have enough time to fin
 
 # What is it about? 
 It's basically a mini version for the Algerian Health Record Booklet, and maybe in the future it could be a replacement.
+
+
+# Pictures 
+
